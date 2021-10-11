@@ -40,20 +40,31 @@ import 'model/update_frequency.dart';
 /// The list of Platform methods:
 /// - [requestAuthorization]
 /// - [preferredUnits]
+/// - [preferredUnitsAsJson]
 /// - [characteristicsQuery]
+/// - [characteristicsQueryAsJson]
 /// - [quantityQuery]
+/// - [quantityQueryAsJson]
 /// - [categoryQuery]
+/// - [categoryQueryAsJson]
 /// - [workoutQuery]
+/// - [workoutQueryAsJson]
 /// - [electrocardiogramQuery]
+/// - [electrocardiogramQueryAsJson]
 /// - [sampleQuery]
+/// - [sampleQueryAsJson]
 /// - [statisticsQuery]
+/// - [statisticsQueryAsJson]
 /// - [heartbeatSeriesQuery]
 /// - [queryActivitySummary]
+/// - [queryActivitySummaryAsJson]
 /// - [enableBackgroundDelivery]
 /// - [disableAllBackgroundDelivery]
 /// - [disableBackgroundDelivery]
 /// - [sourceQuery]
+/// - [sourceQueryAsJson]
 /// - [correlationQuery]
+/// - [correlationQueryAsJson]
 /// - [startWatchApp]
 /// - [isAuthorizedToWrite]
 /// - [addCategory]
@@ -330,9 +341,7 @@ class HealthKitReporter {
   ///
   static Future<List<PreferredUnit>> preferredUnits(
       List<QuantityType> types) async {
-    final arguments = types.map((e) => e.identifier).toList();
-    final result =
-        await _methodChannel.invokeMethod('preferredUnits', arguments);
+    final result = await preferredUnitsAsJson(types);
     final List<dynamic> list = jsonDecode(result);
     final preferredUnits = <PreferredUnit>[];
     for (final Map<String, dynamic> map in list) {
@@ -342,16 +351,35 @@ class HealthKitReporter {
     return preferredUnits;
   }
 
+  /// Returns a Json String that can be converted to [PreferredUnit] for provided [types].
+  ///
+  /// See [preferredUnits] to get the converted objects directly.
+  ///
+  static Future<dynamic> preferredUnitsAsJson(List<QuantityType> types) {
+    final arguments = types.map((e) => e.identifier).toList();
+    return _methodChannel.invokeMethod('preferredUnits', arguments);
+  }
+
   /// Returns [Characteristic] info.
   ///
   /// Warning: The characteristics should be set manually by the user inside
   /// [Apple Health] app. Otherwise it will always return null.
   ///
   static Future<Characteristic> characteristicsQuery() async {
-    final result = await _methodChannel.invokeMethod('characteristicsQuery');
+    final result = await characteristicsQueryAsJson();
     final Map<String, dynamic> map = jsonDecode(result);
     return Characteristic.fromJson(map);
   }
+
+  /// Returns a Json String that can be converted to [Characteristic] info.
+  ///
+  /// Warning: The characteristics should be set manually by the user inside
+  /// [Apple Health] app. Otherwise it will always return null.
+  ///
+  /// See [characteristicsQuery] to get the converted objects directly.
+  ///
+  static Future<dynamic> characteristicsQueryAsJson() =>
+      _methodChannel.invokeMethod('characteristicsQuery');
 
   /// Returns [Quantity] samples for the provided [type],
   /// the preferred [unit] and the time interval predicate [predicate].
@@ -360,13 +388,7 @@ class HealthKitReporter {
   ///
   static Future<List<Quantity>> quantityQuery(
       QuantityType type, String unit, Predicate predicate) async {
-    final arguments = <String, dynamic>{
-      'identifier': type.identifier,
-      'unit': unit,
-    };
-    arguments.addAll(predicate.map);
-    final result =
-        await _methodChannel.invokeMethod('quantityQuery', arguments);
+    final result = await quantityQueryAsJson(type, unit, predicate);
     final List<dynamic> list = jsonDecode(result);
     final quantities = <Quantity>[];
     for (final Map<String, dynamic> map in list) {
@@ -376,17 +398,28 @@ class HealthKitReporter {
     return quantities;
   }
 
+  /// Returns a Json String that can be converted to [Quantity] samples
+  /// for the provided [type], the preferred [unit] and the time
+  /// interval predicate [predicate]
+  ///
+  /// See [quantityQuery] to get the converted objects directly.
+  ///
+  static Future<dynamic> quantityQueryAsJson(
+      QuantityType type, String unit, Predicate predicate) {
+    final arguments = <String, dynamic>{
+      'identifier': type.identifier,
+      'unit': unit,
+    };
+    arguments.addAll(predicate.map);
+    return _methodChannel.invokeMethod('quantityQuery', arguments);
+  }
+
   /// Returns [Category] samples for the provided [type]
   /// and the time interval predicate [predicate].
   ///
   static Future<List<Category>> categoryQuery(
       CategoryType type, Predicate predicate) async {
-    final arguments = <String, dynamic>{
-      'identifier': type.identifier,
-    };
-    arguments.addAll(predicate.map);
-    final result =
-        await _methodChannel.invokeMethod('categoryQuery', arguments);
+    final result = await categoryQueryAsJson(type, predicate);
     final List<dynamic> list = jsonDecode(result);
     final categories = <Category>[];
     for (final Map<String, dynamic> map in list) {
@@ -396,12 +429,25 @@ class HealthKitReporter {
     return categories;
   }
 
+  /// Returns a Json String that can be converted to [Category] samples
+  /// for the provided [type] and the time interval predicate [predicate].
+  ///
+  /// See [categoryQuery] to get the converted objects directly.
+  ///
+  static Future<dynamic> categoryQueryAsJson(
+      CategoryType type, Predicate predicate) {
+    final arguments = <String, dynamic>{
+      'identifier': type.identifier,
+    };
+    arguments.addAll(predicate.map);
+    return _methodChannel.invokeMethod('categoryQuery', arguments);
+  }
+
   /// Returns [Workout] samples for the provided
   /// time interval predicate [predicate].
   ///
   static Future<List<Workout>> workoutQuery(Predicate predicate) async {
-    final result =
-        await _methodChannel.invokeMethod('workoutQuery', predicate.map);
+    final result = await workoutQueryAsJson(predicate);
     final List<dynamic> list = jsonDecode(result);
     final workouts = <Workout>[];
     for (final Map<String, dynamic> map in list) {
@@ -411,13 +457,20 @@ class HealthKitReporter {
     return workouts;
   }
 
+  /// Returns a Json String that can be converted to [Workout] samples
+  /// for the provided time interval predicate [predicate].
+  ///
+  /// See [workoutQuery] to get the converted objects directly.
+  ///
+  static Future<dynamic> workoutQueryAsJson(Predicate predicate) =>
+      _methodChannel.invokeMethod('workoutQuery', predicate.map);
+
   /// Returns [Electrocardiogram] samples for the provided
   /// time interval predicate [predicate].
   ///
   static Future<List<Electrocardiogram>> electrocardiogramQuery(
       Predicate predicate) async {
-    final result = await _methodChannel.invokeMethod(
-        'electrocardiogramQuery', predicate.map);
+    final result = await electrocardiogramQueryAsJson(predicate);
     final List<dynamic> list = jsonDecode(result);
     final electrocardiograms = <Electrocardiogram>[];
     for (final Map<String, dynamic> map in list) {
@@ -426,6 +479,14 @@ class HealthKitReporter {
     }
     return electrocardiograms;
   }
+
+  /// Returns a Json String that can be converted to [Electrocardiogram] samples
+  /// for the provided time interval predicate [predicate].
+  ///
+  /// See [electrocardiogramQuery] to get the converted objects directly.
+  ///
+  static Future<dynamic> electrocardiogramQueryAsJson(Predicate predicate) =>
+      _methodChannel.invokeMethod('electrocardiogramQuery', predicate.map);
 
   /// Returns [Sample] samples for the provided [identifier] and the
   /// time interval predicate [predicate].
@@ -438,11 +499,7 @@ class HealthKitReporter {
   ///
   static Future<List<Sample>> sampleQuery(
       String identifier, Predicate predicate) async {
-    final arguments = <String, dynamic>{
-      'identifier': identifier,
-    };
-    arguments.addAll(predicate.map);
-    final result = await _methodChannel.invokeMethod('sampleQuery', arguments);
+    final result = await sampleQueryAsJson(identifier, predicate);
     final list = List.from(result);
     final samples = <Sample>[];
     for (final String element in list) {
@@ -455,6 +512,26 @@ class HealthKitReporter {
     return samples;
   }
 
+  /// Returns a Json String that can be converted to [Sample] samples
+  /// for the provided [identifier] and the time interval predicate [predicate].
+  ///
+  /// If [identifier] was recognized as one of [QuantityType], the
+  /// units will be set automatically by original
+  /// library [HealthKitReporter] according to SI.
+  /// See https://cocoapods.org/pods/HealthKitReporter
+  /// file [Extensions+HKQuantityType.swift]
+  ///
+  /// See [sampleQuery] to get the converted objects directly.
+  ///
+  static Future<dynamic> sampleQueryAsJson(
+      String identifier, Predicate predicate) {
+    final arguments = <String, dynamic>{
+      'identifier': identifier,
+    };
+    arguments.addAll(predicate.map);
+    return _methodChannel.invokeMethod('sampleQuery', arguments);
+  }
+
   /// Returns [Statistics] for the provided [type] and the,
   /// the preferred [unit] and the time interval predicate [predicate].
   ///
@@ -462,27 +539,36 @@ class HealthKitReporter {
   ///
   static Future<Statistics> statisticsQuery(
       QuantityType type, String unit, Predicate predicate) async {
-    final arguments = <String, dynamic>{
-      'identifier': type.identifier,
-      'unit': unit,
-    };
-    arguments.addAll(predicate.map);
-    final result =
-        await _methodChannel.invokeMethod('statisticsQuery', arguments);
+    final result = await statisticsQueryAsJson(type, unit, predicate);
     final Map<String, dynamic> map = jsonDecode(result);
     final statistics = Statistics.fromJson(map);
     return statistics;
   }
 
-  /// Returns [HeartbeatSerie] samples for the provided
+  /// Returns a Json String that can be converted to [Statistics]
+  /// for the provided [type], preferred [unit] and the time
+  /// interval predicate [predicate].
+  ///
+  /// Warning: The [unit] should be valid. See [preferredUnits].
+  ///
+  /// See [statisticsQuery] to get the converted objects directly.
+  ///
+  static Future<dynamic> statisticsQueryAsJson(
+      QuantityType type, String unit, Predicate predicate) {
+    final arguments = <String, dynamic>{
+      'identifier': type.identifier,
+      'unit': unit,
+    };
+    arguments.addAll(predicate.map);
+    return _methodChannel.invokeMethod('statisticsQuery', arguments);
+  }
+
+  /// Returns [ActivitySummary] samples for the provided
   /// time interval predicate [predicate].
   ///
   static Future<List<ActivitySummary>> queryActivitySummary(
       Predicate predicate) async {
-    final arguments = <String, dynamic>{};
-    arguments.addAll(predicate.map);
-    final result =
-        await _methodChannel.invokeMethod('queryActivitySummary', arguments);
+    final result = await queryActivitySummaryAsJson(predicate);
     final List<dynamic> list = jsonDecode(result);
     final activitySummaries = <ActivitySummary>[];
     for (final Map<String, dynamic> map in list) {
@@ -490,6 +576,17 @@ class HealthKitReporter {
       activitySummaries.add(activitySummary);
     }
     return activitySummaries;
+  }
+
+  /// Returns a Json String that can be converted to [ActivitySummary] samples
+  /// for the provided time interval predicate [predicate].
+  ///
+  /// See [queryActivitySummary] to get the converted objects directly.
+  ///
+  static Future<dynamic> queryActivitySummaryAsJson(Predicate predicate) {
+    final arguments = <String, dynamic>{};
+    arguments.addAll(predicate.map);
+    return _methodChannel.invokeMethod('queryActivitySummary', arguments);
   }
 
   /// Returns a status of calling native method for
@@ -534,11 +631,7 @@ class HealthKitReporter {
   ///
   static Future<List<Source>> sourceQuery(
       String identifier, Predicate predicate) async {
-    final arguments = <String, dynamic>{
-      'identifier': identifier,
-    };
-    arguments.addAll(predicate.map);
-    final result = await _methodChannel.invokeMethod('sourceQuery', arguments);
+    final result = await sourceQueryAsJson(identifier, predicate);
     final List<dynamic> list = jsonDecode(result);
     final sources = <Source>[];
     for (final Map<String, dynamic> map in list) {
@@ -546,6 +639,20 @@ class HealthKitReporter {
       sources.add(source);
     }
     return sources;
+  }
+
+  /// Returns a Json String that can be converted to [Source] samples
+  /// for the provided [identifier] and the time interval predicate [predicate].
+  ///
+  /// See [sourceQuery] to get the converted objects directly.
+  ///
+  static Future<dynamic> sourceQueryAsJson(
+      String identifier, Predicate predicate) {
+    final arguments = <String, dynamic>{
+      'identifier': identifier,
+    };
+    arguments.addAll(predicate.map);
+    return _methodChannel.invokeMethod('sourceQuery', arguments);
   }
 
   /// Returns [Correlation] samples for the provided [identifier], the
@@ -564,13 +671,8 @@ class HealthKitReporter {
   static Future<List<Correlation>> correlationQuery(
       String identifier, Predicate predicate,
       {Map<String, Predicate>? typePredicates}) async {
-    final arguments = {
-      'identifier': identifier,
-      'typePredicates': typePredicates,
-    };
-    arguments.addAll(predicate.map);
-    final result =
-        await _methodChannel.invokeMethod('correlationQuery', arguments);
+    final result = await correlationQueryAsJson(identifier, predicate,
+        typePredicates: typePredicates);
     final List<dynamic> list = jsonDecode(result);
     final correlations = <Correlation>[];
     for (final Map<String, dynamic> map in list) {
@@ -578,6 +680,32 @@ class HealthKitReporter {
       correlations.add(correlation);
     }
     return correlations;
+  }
+
+  /// Returns a Json String that can be converted to [Correlation] samples
+  /// for the provided [identifier], the time interval predicate [predicate]
+  /// and optional [typePredicates] for [Category] and/or [Quantity] values.
+  ///
+  /// Warning: In order to use the correlations, you must be sure, that you have
+  /// provided reading permissions for relevant [QuantityType].
+  ///
+  /// For instance, if you want to get the data for [CorrelationType.bloodPressure],
+  /// you need to ask user to give read permissions for [QuantityType.bloodPressureDiastolic] and
+  /// [QuantityType.bloodPressureSystolic]. Otherwise [HealthKit] will throw fatal error with
+  /// message: "Authorization to read the following types is disallowed:
+  /// HKCorrelationTypeIdentifierBloodPressure".
+  ///
+  /// See [sourceQuery] to get the converted objects directly.
+  ///
+  static Future<dynamic> correlationQueryAsJson(
+      String identifier, Predicate predicate,
+      {Map<String, Predicate>? typePredicates}) {
+    final arguments = {
+      'identifier': identifier,
+      'typePredicates': typePredicates,
+    };
+    arguments.addAll(predicate.map);
+    return _methodChannel.invokeMethod('correlationQuery', arguments);
   }
 
   /// Returns status of the App on WatchOS device.
