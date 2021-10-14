@@ -20,7 +20,15 @@ final class StreamHandlerFactory: NSObject {
             } else {
                 throw HealthKitError.notAvailable("Not available for the current iOS version")
             }
-        case .anchoredObjectQuery:
+        case .anchoredObjectQuery1:
+            return AnchoredObjectQueryStreamHandler.make(with: reporter)
+        case .anchoredObjectQuery2:
+            return AnchoredObjectQueryStreamHandler.make(with: reporter)
+        case .anchoredObjectQuery3:
+            return AnchoredObjectQueryStreamHandler.make(with: reporter)
+        case .anchoredObjectQuery4:
+            return AnchoredObjectQueryStreamHandler.make(with: reporter)
+        case .anchoredObjectQuery5:
             return AnchoredObjectQueryStreamHandler.make(with: reporter)
         case .heartbeatSeriesQuery:
             return HeartbeatSeriesQueryStreamHandler.make(with: reporter)

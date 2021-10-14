@@ -131,8 +131,16 @@ class HealthKitReporter {
   /// [EventChannel] link to [SwiftHealthKitReporterPlugin.swift]
   /// Will handle event exchanges of the plugin.
   ///
-  static const EventChannel _anchoredObjectQueryChannel =
-      EventChannel('health_kit_reporter_event_channel_anchored_object_query');
+  static const EventChannel _anchoredObjectQueryChannel1 =
+      EventChannel('health_kit_reporter_event_channel_anchored_object_query_1');
+  static const EventChannel _anchoredObjectQueryChannel2 =
+      EventChannel('health_kit_reporter_event_channel_anchored_object_query_2');
+  static const EventChannel _anchoredObjectQueryChannel3 =
+      EventChannel('health_kit_reporter_event_channel_anchored_object_query_3');
+  static const EventChannel _anchoredObjectQueryChannel4 =
+      EventChannel('health_kit_reporter_event_channel_anchored_object_query_4');
+  static const EventChannel _anchoredObjectQueryChannel5 =
+      EventChannel('health_kit_reporter_event_channel_anchored_object_query_5');
 
   /// [EventChannel] link to [SwiftHealthKitReporterPlugin.swift]
   /// Will handle event exchanges of the plugin.
@@ -211,14 +219,35 @@ class HealthKitReporter {
   ///
   static StreamSubscription<dynamic> anchoredObjectQuery(
       String identifier, Predicate predicate,
-      {required Function(List<Sample>, List<DeletedObject>) onUpdate}) {
+      {required Function(List<Sample>, List<DeletedObject>) onUpdate,
+      required int channelIndex}) {
     final arguments = <String, dynamic>{
       'identifier': identifier,
     };
     arguments.addAll(predicate.map);
-    return _anchoredObjectQueryChannel
-        .receiveBroadcastStream(arguments)
-        .listen((event) {
+
+    var eventChannel;
+    switch (channelIndex) {
+      case 1:
+        eventChannel = _anchoredObjectQueryChannel1;
+        break;
+      case 2:
+        eventChannel = _anchoredObjectQueryChannel2;
+        break;
+      case 3:
+        eventChannel = _anchoredObjectQueryChannel3;
+        break;
+      case 4:
+        eventChannel = _anchoredObjectQueryChannel4;
+        break;
+      case 5:
+        eventChannel = _anchoredObjectQueryChannel5;
+        break;
+      default:
+        eventChannel = _anchoredObjectQueryChannel1;
+    }
+
+    return eventChannel.receiveBroadcastStream(arguments).listen((event) {
       final map = LinkedHashMap<String, dynamic>.from(event);
       final samplesList = List.from(map['samples']);
       final samples = <Sample>[];

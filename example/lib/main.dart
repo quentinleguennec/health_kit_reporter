@@ -38,7 +38,7 @@ class _MyAppState extends State<MyApp> {
   final _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   final _predicate = Predicate(
     DateTime.now().add(Duration(days: -365)),
-    DateTime.now(),
+    DateTime.now().add(Duration(days: 365)),
   );
   final _device = Device(
     'FlutterTracker',
@@ -75,8 +75,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     final initializationSettingsIOs = IOSInitializationSettings();
     final initSettings = InitializationSettings(iOS: initializationSettingsIOs);
-    _flutterLocalNotificationsPlugin.initialize(initSettings,
-        onSelectNotification: (string) {
+    _flutterLocalNotificationsPlugin.initialize(initSettings, onSelectNotification: (string) {
       print(string);
       return Future.value(string);
     });
@@ -93,27 +92,20 @@ class _MyAppState extends State<MyApp> {
               onPressed: () async {
                 try {
                   final readTypes = <String>[];
-                  readTypes.addAll(
-                      ActivitySummaryType.values.map((e) => e.identifier));
-                  readTypes
-                      .addAll(CategoryType.values.map((e) => e.identifier));
-                  readTypes.addAll(
-                      CharacteristicType.values.map((e) => e.identifier));
-                  readTypes
-                      .addAll(QuantityType.values.map((e) => e.identifier));
+                  readTypes.addAll(ActivitySummaryType.values.map((e) => e.identifier));
+                  readTypes.addAll(CategoryType.values.map((e) => e.identifier));
+                  readTypes.addAll(CharacteristicType.values.map((e) => e.identifier));
+                  readTypes.addAll(QuantityType.values.map((e) => e.identifier));
                   readTypes.addAll(WorkoutType.values.map((e) => e.identifier));
                   readTypes.addAll(SeriesType.values.map((e) => e.identifier));
-                  readTypes.addAll(
-                      ElectrocardiogramType.values.map((e) => e.identifier));
+                  readTypes.addAll(ElectrocardiogramType.values.map((e) => e.identifier));
                   final writeTypes = <String>[
                     QuantityType.stepCount.identifier,
                     WorkoutType.workoutType.identifier,
                     CategoryType.sleepAnalysis.identifier,
                     CategoryType.mindfulSession.identifier,
                   ];
-                  final isRequested =
-                      await HealthKitReporter.requestAuthorization(
-                          readTypes, writeTypes);
+                  final isRequested = await HealthKitReporter.requestAuthorization(readTypes, writeTypes);
                   setState(() => _isAuthorizationRequested = isRequested);
                 } catch (e) {
                   print(e);
@@ -206,28 +198,27 @@ class _MyAppState extends State<MyApp> {
                           Text('OBSERVE'),
                           ElevatedButton(
                               onPressed: () {
-                                observerQuery(
-                                    QuantityType.stepCount.identifier);
+                                observerQuery(QuantityType.stepCount.identifier);
                               },
                               child: Text('observerQuery - STEPS')),
                           ElevatedButton(
                               onPressed: () {
-                                observerQuery(
-                                    QuantityType.heartRate.identifier);
+                                observerQuery(QuantityType.heartRate.identifier);
                               },
                               child: Text('observerQuery - HR')),
+                          // ElevatedButton(
+                          //     onPressed: () {
+                          //       anchoredObjectQuery(QuantityType.stepCount.identifier);
+                          //     },
+                          //     child: Text('anchoredObjectQuery - STEPS')),
                           ElevatedButton(
-                              onPressed: () {
-                                anchoredObjectQuery(
-                                    QuantityType.stepCount.identifier);
-                              },
-                              child: Text('anchoredObjectQuery - STEPS')),
+                            onPressed: () => anchoredObjectQueryWorkout(WorkoutType.workoutType.identifier),
+                            child: Text('anchoredObjectQuery - Workout'),
+                          ),
                           ElevatedButton(
-                              onPressed: () {
-                                anchoredObjectQuery(
-                                    QuantityType.heartRate.identifier);
-                              },
-                              child: Text('anchoredObjectQuery - HR')),
+                            onPressed: () => anchoredObjectQuerySleep(CategoryType.sleepAnalysis.identifier),
+                            child: Text('anchoredObjectQuery - Sleep'),
+                          ),
                           ElevatedButton(
                               onPressed: () {
                                 queryActivitySummaryUpdates();
@@ -261,8 +252,7 @@ class _MyAppState extends State<MyApp> {
 
   void queryActivitySummary() async {
     try {
-      final activitySummary =
-          await HealthKitReporter.queryActivitySummary(_predicate);
+      final activitySummary = await HealthKitReporter.queryActivitySummary(_predicate);
       print('activitySummary: ${activitySummary.map((e) => e.map).toList()}');
     } catch (e) {
       print(e);
@@ -271,10 +261,8 @@ class _MyAppState extends State<MyApp> {
 
   void queryElectrocardiograms() async {
     try {
-      final electrocardiograms =
-          await HealthKitReporter.electrocardiogramQuery(_predicate);
-      print(
-          'electrocardiograms: ${electrocardiograms.map((e) => e.map).toList()}');
+      final electrocardiograms = await HealthKitReporter.electrocardiogramQuery(_predicate);
+      print('electrocardiograms: ${electrocardiograms.map((e) => e.map).toList()}');
     } catch (e) {
       print(e);
     }
@@ -282,8 +270,8 @@ class _MyAppState extends State<MyApp> {
 
   void queryCorrelations() async {
     try {
-      final correlations = await HealthKitReporter.correlationQuery(
-          CorrelationType.bloodPressure.identifier, _predicate);
+      final correlations =
+          await HealthKitReporter.correlationQuery(CorrelationType.bloodPressure.identifier, _predicate);
       print('correlations: ${correlations.map((e) => e.map).toList()}');
     } catch (e) {
       print(e);
@@ -292,8 +280,7 @@ class _MyAppState extends State<MyApp> {
 
   void querySources() async {
     try {
-      final sources = await HealthKitReporter.sourceQuery(
-          QuantityType.stepCount.identifier, _predicate);
+      final sources = await HealthKitReporter.sourceQuery(QuantityType.stepCount.identifier, _predicate);
       print('sources: ${sources.map((e) => e.map).toList()}');
     } catch (e) {
       print(e);
@@ -302,20 +289,13 @@ class _MyAppState extends State<MyApp> {
 
   void saveSteps() async {
     try {
-      final canWrite = await HealthKitReporter.isAuthorizedToWrite(
-          QuantityType.stepCount.identifier);
+      final canWrite = await HealthKitReporter.isAuthorizedToWrite(QuantityType.stepCount.identifier);
       if (canWrite) {
         final now = DateTime.now();
         final minuteAgo = now.add(Duration(minutes: -1));
         final harmonized = QuantityHarmonized(100, 'count', null);
-        final steps = Quantity(
-            'testStepsUUID',
-            QuantityType.stepCount.identifier,
-            minuteAgo.millisecondsSinceEpoch,
-            now.millisecondsSinceEpoch,
-            _device,
-            _sourceRevision,
-            harmonized);
+        final steps = Quantity('testStepsUUID', QuantityType.stepCount.identifier, minuteAgo.millisecondsSinceEpoch,
+            now.millisecondsSinceEpoch, _device, _sourceRevision, harmonized);
         print('try to save: ${steps.map}');
         final saved = await HealthKitReporter.save(steps);
         print('stepsSaved: $saved');
@@ -329,8 +309,7 @@ class _MyAppState extends State<MyApp> {
 
   void saveWorkout() async {
     try {
-      final canWrite = await HealthKitReporter.isAuthorizedToWrite(
-          WorkoutType.workoutType.identifier);
+      final canWrite = await HealthKitReporter.isAuthorizedToWrite(WorkoutType.workoutType.identifier);
       if (canWrite) {
         final harmonized = WorkoutHarmonized(
           WorkoutActivityType.badminton,
@@ -380,8 +359,7 @@ class _MyAppState extends State<MyApp> {
 
   void saveMindfulMinutes() async {
     try {
-      final canWrite = await HealthKitReporter.isAuthorizedToWrite(
-          CategoryType.mindfulSession.identifier);
+      final canWrite = await HealthKitReporter.isAuthorizedToWrite(CategoryType.mindfulSession.identifier);
       if (canWrite) {
         final now = DateTime.now();
         final minuteAgo = now.add(Duration(minutes: -1));
@@ -413,8 +391,7 @@ class _MyAppState extends State<MyApp> {
 
   void querySamples() async {
     try {
-      final samples = await HealthKitReporter.sampleQuery(
-          QuantityType.stepCount.identifier, _predicate);
+      final samples = await HealthKitReporter.sampleQuery(QuantityType.stepCount.identifier, _predicate);
       print('samples: ${samples.map((e) => e.map).toList()}');
     } catch (e) {
       print(e);
@@ -423,8 +400,7 @@ class _MyAppState extends State<MyApp> {
 
   void queryCategory() async {
     try {
-      final categories = await HealthKitReporter.categoryQuery(
-          CategoryType.sleepAnalysis, _predicate);
+      final categories = await HealthKitReporter.categoryQuery(CategoryType.sleepAnalysis, _predicate);
       print('categories: ${categories.map((e) => e.map).toList()}');
     } catch (e) {
       print(e);
@@ -463,11 +439,9 @@ class _MyAppState extends State<MyApp> {
         print('preferredUnit: ${preferredUnit.map}');
         final type = QuantityTypeFactory.from(identifier);
         try {
-          final quantities =
-              await HealthKitReporter.quantityQuery(type, unit, _predicate);
+          final quantities = await HealthKitReporter.quantityQuery(type, unit, _predicate);
           print('quantity: ${quantities.map((e) => e.map).toList()}');
-          final statistics =
-              await HealthKitReporter.statisticsQuery(type, unit, _predicate);
+          final statistics = await HealthKitReporter.statisticsQuery(type, unit, _predicate);
           print('statistics: ${statistics.map}');
         } catch (e) {
           print(e);
@@ -479,24 +453,20 @@ class _MyAppState extends State<MyApp> {
   }
 
   void observerQuery(String identifier) async {
-    final sub = HealthKitReporter.observerQuery(identifier, _predicate,
-        onUpdate: (identifier) async {
+    final sub = HealthKitReporter.observerQuery(identifier, _predicate, onUpdate: (identifier) async {
       print('Updates for observerQuerySub - $identifier');
       print(identifier);
       final iOSDetails = IOSNotificationDetails();
       final details = NotificationDetails(iOS: iOSDetails);
-      await _flutterLocalNotificationsPlugin.show(
-          0, 'Observer', identifier, details);
+      await _flutterLocalNotificationsPlugin.show(0, 'Observer', identifier, details);
     });
     print('$identifier observerQuerySub: $sub');
-    final isSet = await HealthKitReporter.enableBackgroundDelivery(
-        identifier, UpdateFrequency.immediate);
+    final isSet = await HealthKitReporter.enableBackgroundDelivery(identifier, UpdateFrequency.immediate);
     print('$identifier enableBackgroundDelivery: $isSet');
   }
 
   void heartbeatSeriesQuery() {
-    final sub =
-        HealthKitReporter.heartbeatSeriesQuery(_predicate, onUpdate: (serie) {
+    final sub = HealthKitReporter.heartbeatSeriesQuery(_predicate, onUpdate: (serie) {
       print('Updates for heartbeatSeriesQuery');
       print(serie.map);
     });
@@ -504,27 +474,54 @@ class _MyAppState extends State<MyApp> {
   }
 
   void workoutRouteQuery() {
-    final sub =
-        HealthKitReporter.workoutRouteQuery(_predicate, onUpdate: (serie) {
+    final sub = HealthKitReporter.workoutRouteQuery(_predicate, onUpdate: (serie) {
       print('Updates for workoutRouteQuery');
       print(serie.map);
     });
     print('workoutRouteQuery: $sub');
   }
 
-  void anchoredObjectQuery(String identifier) {
-    final sub = HealthKitReporter.anchoredObjectQuery(identifier, _predicate,
-        onUpdate: (samples, deletedObjects) {
-      print('Updates for anchoredObjectQuerySub - $identifier');
-      print(samples.map((e) => e.map).toList());
-      print(deletedObjects.map((e) => e.map).toList());
-    });
+  // void anchoredObjectQuery(String identifier) {
+  //   final sub = HealthKitReporter.anchoredObjectQuery(identifier, _predicate,
+  //       channelIndex: 1,
+  //       onUpdate: (samples, deletedObjects) {
+  //         print('Updates for anchoredObjectQuerySub - $identifier');
+  //         print(samples.map((e) => e.map).toList());
+  //         print(deletedObjects.map((e) => e.map).toList());
+  //       });
+  //   print('$identifier anchoredObjectQuerySub: $sub');
+  // }
+
+  void anchoredObjectQueryWorkout(String identifier) {
+    final sub = HealthKitReporter.anchoredObjectQuery(
+      identifier,
+      _predicate,
+      channelIndex: 1,
+      onUpdate: (samples, deletedObjects) {
+        print('Updates for anchoredObjectQuerySub - $identifier');
+        print(samples.map((e) => e.map).toList());
+        print(deletedObjects.map((e) => e.map).toList());
+      },
+    );
+    print('$identifier anchoredObjectQuerySub: $sub');
+  }
+
+  void anchoredObjectQuerySleep(String identifier) {
+    final sub = HealthKitReporter.anchoredObjectQuery(
+      identifier,
+      _predicate,
+      channelIndex: 2,
+      onUpdate: (samples, deletedObjects) {
+        print('Updates for anchoredObjectQuerySub - $identifier');
+        print(samples.map((e) => e.map).toList());
+        print(deletedObjects.map((e) => e.map).toList());
+      },
+    );
     print('$identifier anchoredObjectQuerySub: $sub');
   }
 
   void queryActivitySummaryUpdates() {
-    final sub = HealthKitReporter.queryActivitySummaryUpdates(_predicate,
-        onUpdate: (samples) {
+    final sub = HealthKitReporter.queryActivitySummaryUpdates(_predicate, onUpdate: (samples) {
       print('Updates for activitySummaryUpdatesSub');
       print(samples.map((e) => e.map).toList());
     });
@@ -537,13 +534,8 @@ class _MyAppState extends State<MyApp> {
     final enumerateTo = DateTime.utc(2020, 12, 31, 12, 30, 30);
     final intervalComponents = DateComponents(month: 1);
     final sub = HealthKitReporter.statisticsCollectionQuery(
-        QuantityType.stepCount,
-        'count',
-        _predicate,
-        anchorDate,
-        enumerateFrom,
-        enumerateTo,
-        intervalComponents, onUpdate: (statistics) {
+        QuantityType.stepCount, 'count', _predicate, anchorDate, enumerateFrom, enumerateTo, intervalComponents,
+        onUpdate: (statistics) {
       print('Updates for statisticsCollectionQuerySub');
       print(statistics.map);
     });
